@@ -20,7 +20,13 @@ const db = mysql.createPool({
   connectionLimit: 30, // Max connections in pool
   queueLimit: 0
 });
-
+// Enable CORS
+app.use(cors({
+  origin: ['https://thankful-flower-095184710.4.azurestaticapps.net'], // Allowed origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true // Enable credentials
+}));
 // Test database connection
 db.getConnection((err, connection) => {
   if (err) {
