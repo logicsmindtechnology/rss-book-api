@@ -13,24 +13,25 @@ app.use(cors({
   credentials: true // Enable credentials
 }));
 
-// Handle preflight requests explicitly
-app.options('*', cors());
+// Parse JSON bodies
+app.use(express.json());
 
-// Additional headers to handle CORS
+// Always include CORS headers even for errors
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(204);
-  } else {
-    next();
-  }
+  next();
 });
 
-// Parse JSON bodies
-app.use(express.json());
+// Debugging headers
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    console.log('Response Headers:', res.getHeaders());
+  });
+  next();
+});
 
 // Database connection
 const db = mysql.createPool({
@@ -104,6 +105,13 @@ app.get('/books/search', (req, res) => {
     console.error('Unexpected Server Error:', error.message);
     res.status(500).send({ error: 'Internal Server Error', details: error.message });
   }
+});
+
+// Error handler to always return CORS headers
+app.use((err, req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(err.status || 500).send({ error: err.message });
 });
 
 // Start server
