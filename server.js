@@ -1,39 +1,11 @@
 const express = require('express');
 const mysql = require('mysql2');
-const cors = require('cors');
 
 // Initialize app
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:4200', // Local Angular/React app
-  'https://thankful-flower-095184710.4.azurestaticapps.net' // Azure static app
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true); // Allow the origin if it matches
-    } else {
-      callback(new Error('Not allowed by CORS')); // Reject the request
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Allow cookies and authorization headers
-}));
-
 // Parse JSON bodies
 app.use(express.json());
-
-// Always include CORS headers even for errors
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   res.header('Access-Control-Allow-Credentials', 'true');
-//   next();
-// });
 
 // Debugging headers
 app.use((req, res, next) => {
@@ -41,12 +13,6 @@ app.use((req, res, next) => {
     console.log('Response Headers:', res.getHeaders());
   });
   next();
-});
-// Error handler to always return CORS headers
-app.use((err, req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.status(err.status || 500).send({ error: err.message });
 });
 
 // Database connection
@@ -69,9 +35,12 @@ db.getConnection((err, connection) => {
     connection.release(); // Release connection back to pool
   }
 });
+
+// Test route
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
+
 // API to fetch all books
 app.get('/books', (req, res) => {
   try {
@@ -124,7 +93,6 @@ app.get('/books/search', (req, res) => {
     res.status(500).send({ error: 'Internal Server Error', details: error.message });
   }
 });
-
 
 // Start server
 const PORT = process.env.PORT || 8080;
