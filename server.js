@@ -32,6 +32,12 @@ app.use((req, res, next) => {
   });
   next();
 });
+// Error handler to always return CORS headers
+app.use((err, req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(err.status || 500).send({ error: err.message });
+});
 
 // Database connection
 const db = mysql.createPool({
@@ -53,7 +59,9 @@ db.getConnection((err, connection) => {
     connection.release(); // Release connection back to pool
   }
 });
-
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
 // API to fetch all books
 app.get('/books', (req, res) => {
   try {
@@ -107,12 +115,6 @@ app.get('/books/search', (req, res) => {
   }
 });
 
-// Error handler to always return CORS headers
-app.use((err, req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.status(err.status || 500).send({ error: err.message });
-});
 
 // Start server
 const PORT = process.env.PORT || 8080;
