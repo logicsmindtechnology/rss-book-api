@@ -4,32 +4,40 @@ const cors = require('cors');
 
 // Initialize app
 const app = express();
-//app.use(cors());
 
 // Enable CORS
 app.use(cors({
-  origin: ['https://thankful-flower-095184710.4.azurestaticapps.net'], // Allowed origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  origin: 'https://thankful-flower-095184710.4.azurestaticapps.net', // Allowed origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Enable credentials
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
+// Additional headers to handle CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'https://thankful-flower-095184710.4.azurestaticapps.net');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
-  next();
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+  } else {
+    next();
+  }
 });
+
+// Parse JSON bodies
 app.use(express.json());
+
 // Database connection
 const db = mysql.createPool({
-  //host: 'localhost',
-  host:'62.72.28.152',
-  //user: 'root',
-  user:'u451770217_root',
+  host: '62.72.28.152',
+  user: 'u451770217_root',
   password: 'Ganesha32145#', // Replace with your MySQL password
-  //database: 'book_store'
-  database:'u451770217_book_store',
+  database: 'u451770217_book_store',
   waitForConnections: true,
   connectionLimit: 30, // Max connections in pool
   queueLimit: 0
